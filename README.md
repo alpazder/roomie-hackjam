@@ -1,78 +1,61 @@
-# Roomie — Tinder for Roommates
+# Roomie — scenario-based roommate discovery
 
-A React + Vite hackathon MVP with responsive purple-and-white styling, touch swiping, profile onboarding/editing, five-factor compatibility, simulated mutual matches, an undo action, filters, and local persistence.
+Live demo: https://alpazder.github.io/roomie-hackjam/
 
-## Start on your Mac
+React, Vite, Tailwind CSS, and localStorage. The deployed GitHub Pages index is a self-contained static build; the source archive contains the editable application and optional API handler.
 
-Dependencies are already installed in this folder.
+## Local setup
 
 ```sh
-cd /Users/alp/Documents/Codex/2026-11-21/new-chat/roomie
+npm install
 npm run dev
-```
-
-Open the localhost URL printed by Vite. For mobile testing on the same trusted Wi-Fi, run `npm run dev -- --host 0.0.0.0` and open the Network URL on your phone.
-
-## Build and test
-
-```sh
 npm test
 npm run build
-npm run preview
 ```
 
-Four Node tests cover identical profiles, all five score bounds, budget differences, and explanation attribution. The production build passes. Desktop and 390px mobile rendering have been checked in Chrome. A like triggered the mutual-match notification and saved Maya on the matches page.
+On this Mac, the project is at `/Users/alp/Documents/Codex/2026-11-21/new-chat/roomie`.
 
-## Vercel deployment
+## What works
 
-From this project directory in your Mac Terminal:
+- Ten real-life scenario cards, pointer swipes in four directions, keyboard arrow controls, and equivalent labeled buttons.
+- Left: not for me; right: works for me; up: dealbreaker; down: flexible.
+- A small online numerical preference model. Each dimension starts at a neutral 0.5 prior with weight 1. Answers add weighted evidence: yes/no 1, dealbreaker 3, flexible 0.25. A negative response inverts the scenario's target; flexibility contributes 0.5.
+- Live ranking after every scenario answer, visible evidence counts, undo, reset, and a discovery list sorted with the same score.
+- Budget similarity is `max(0, 1 - absolute budget difference / 1000)`. Answered lifestyle dimensions contribute `1 - absolute learned/candidate preference difference`. A dimension with a dealbreaker receives weight 3 instead of 1. Scores are weighted means, rounded to percentages.
+- No fit percentage before any scenario evidence. Unexplored dimensions are labeled. These are self-reported preference estimates, not validated personality or tenancy predictions.
+- Profile basics and budget editing; profile like/pass; simulated incoming likes and mutual matches; local persistence.
+- Four requested named demo profiles. All lifestyle, budget, age, university, and interest values are sample data, not asserted facts about the people.
 
-```sh
-npx vercel login
-npx vercel --prod
-```
+## Modules
 
-Choose your account, create a new project named `roomie-hackjam`, retain this directory, and use the detected Vite configuration. Build command: `npm run build`; output: `dist`. No environment variables are needed. Never paste tokens into the code. Open the returned public URL and verify it before presenting.
+- `src/scenarios.js`: scenarios, inference, ranking, score breakdown, transparent numerical explanations.
+- `src/ScenarioLab.jsx`: four-way input and live ranking interface.
+- `src/main.jsx`: navigation, profile form, discovery, and match flow.
+- `src/data.js`: sample profiles.
+- `src/AiAdvice.jsx`: optional live Gemini request with explicit loading/error/provider states.
+- `api/gemini.js`: Vercel serverless handler, input validation, CORS, anonymous preference-only payload, server-held key, timeout and error handling.
+- `scripts/package-pages.py`: creates the self-contained Pages index from the production build.
 
-## Architecture
+## Gemini status: NOT ENABLED
 
-- `src/main.jsx`: React UI, navigation, onboarding/profile form, swipe gestures, filters, match dialog, and compatibility detail view.
-- `src/compatibility.js`: equal-weight compatibility across budget, cleanliness, sleep schedule, guests, and pets. Budget similarity falls by one point per $8 difference, clamped at zero; categorical preferences use transparent fixed scores. Scores indicate preference similarity, not a validated prediction.
-- `src/data.js`: five fictional student profiles. `likedYou` flags simulate incoming likes; a like becomes a match only if both sides like one another.
-- `src/style.css`: Tailwind CSS utilities plus custom responsive CSS, mobile bottom navigation, animated swipe transitions, and reduced-motion support.
-- `localStorage`: saves the current profile, swipe history, and matches in this browser. There are no real accounts, messaging, shared database, or student verification.
-- Images: remote Unsplash portraits with colored initial-avatar fallbacks; Google Fonts have system fallbacks. All profiles are fictional.
+The static GitHub Pages deployment does not run server functions. Numerical explanations are not Gemini output, and no placeholder text is presented as AI. The Gemini integration code has not been tested against a live model/key.
 
-## Current scope and limits
+To enable on Vercel:
 
-React and Vite are installed. Tailwind is not installed: the registry was unavailable and Tailwind was not cached. The interface uses custom CSS so the project still builds. To add Tailwind when internet access is available:
+1. Deploy the complete source project to Vercel with Vite defaults.
+2. Add `GEMINI_API_KEY` as a server-only environment variable in the Vercel dashboard. Never use a `VITE_` prefix for the key and never commit it.
+3. Add `GEMINI_MODEL` with a model currently supported by your Gemini account.
+4. If retaining a separate GitHub Pages frontend, set `VITE_GEMINI_ENDPOINT` to the full HTTPS `/api/gemini` endpoint before rebuilding the frontend. This URL is public configuration, not a secret. The server permits `https://alpazder.github.io` plus origins explicitly set in `ROOMIE_ALLOWED_ORIGINS`.
+5. Verify a successful live API response and the UI's Gemini provider label before claiming Gemini functionality or using an AI-track pitch. Enforce provider spending limits and appropriate rate limits before wider use.
 
-```sh
-npm install -D tailwindcss @tailwindcss/vite
-```
+Reference: https://ai.google.dev/api/generate-content
 
-Then add `tailwindcss()` from `@tailwindcss/vite` to Vite's plugins and `@import "tailwindcss";` at the beginning of the CSS file. No Gemini API call is included; compatibility explanations are deterministic and explicitly labeled. Gemini would need a server-side endpoint with its key stored in Vercel environment variables. Supabase is deferred.
+## Honest demo limitations
 
-## Demo walkthrough
+The choices are still self-reported. Scenario framing does not establish that responses are more honest. Ranking is a deterministic incremental model, not a trained ML system. Simulated matches do not contact real people. Names/photos are user supplied; sample preferences are invented. There are no real accounts, database, chat, student verification, or push notifications.
 
-1. Create a profile with your name, university, budget, and habits.
-2. Tap the compatibility badge to see five-factor reasoning.
-3. Like Maya to trigger a guaranteed simulated mutual match.
-4. Open Your matches and inspect the breakdown.
-5. Edit your profile to show compatibility changing.
-6. Explore budget and university filters; use undo to revisit a swipe.
+## Team work
 
-## Team of three
-
-1. UI owner: discovery card, responsive layout, accessibility, visual polish.
-2. Logic owner: scoring, onboarding, local storage, tests.
-3. Demo/deployment owner: Vercel, judge walkthrough, presentation, mobile verification.
-
-## Remaining acceptance checks
-
-- Create and edit profile; reload to verify persistence.
-- Pass, like, swipe by touch, undo, and exhaust all profiles.
-- Confirm a like on Maya matches; a like on Alex does not.
-- Test filters with no results and clear them.
-- Check 390px mobile and desktop layouts, keyboard access, and console errors.
-- Deploy, open the public URL, and repeat the main walkthrough.
+- Developer 1: scenario cards, gestures, and mobile UX.
+- Developer 2: preference model, score tests, and profile data.
+- Developer 3: deployment, optional Gemini backend, and presentation validation.

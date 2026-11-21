@@ -1,33 +1,25 @@
-# Roomie — Two-minute hackathon pitch
+# Roomie — Two-minute pitch
 
-**0:00–0:20 — The problem**
+**0:00–0:20 — Problem**
+“Finding a roommate means choosing someone you’ll share everyday life with. A photo, a major, and ‘I’m pretty clean’ don’t tell the whole story. Roomie helps students explore concrete living situations and discover which preferences matter most to them.”
 
-“Finding a roommate is one of the biggest decisions students make with some of the least useful information. You can know someone’s major and favorite music and still discover that their idea of clean is completely different from yours. Roomie helps students find people who fit their everyday lives.”
+**0:20–0:55 — Four directions**
+[Open Your vibe.]
+“Instead of selecting cleanliness and sleep labels, react to situations. Your roommate leaves dishes until tomorrow. Do you swipe right because it works for you, left because it doesn’t, up because it’s a dealbreaker, or down because you’re flexible?”
+[Mark the dishes card as a dealbreaker.]
+“That answer immediately updates our numerical preference model. A dealbreaker carries more weight than a mild dislike. This is learning from self-reported choices—not a lie detector.”
 
-**0:20–0:45 — Meet Roomie**
+**0:55–1:20 — Visible adaptation**
+[Point at the live ranking. Answer another card.]
+“The roommate list re-ranks after each answer. The fingerprint shows which dimensions you’ve explored. Undo an answer and the model recalculates. Before you answer any scenarios, we show no lifestyle percentage. Once you do, the score is an early preference-similarity estimate, not a promise that living together will work.”
 
-“Roomie brings the simplicity of swiping to student housing. First, you create a profile and answer a few practical questions: What’s your rent budget? How tidy are you? Are you a night owl? How do you feel about guests and pets?”
+**1:20–1:40 — Discover and connect**
+[Open Discover, inspect the fit badge, and like a profile.]
+“Discovery uses that same ranking. You can see the factors behind the score, like a profile, and get a simulated mutual match. These named profiles use sample lifestyle preferences; our demo does not claim those are facts about the people.”
 
-[Show the onboarding questionnaire and save a profile.]
+**1:40–2:00 — Build and next steps**
+“We built Roomie in React, Vite, and Tailwind, with browser-local persistence and tested scoring logic. The published GitHub Pages demo works without an account. Real student verification, messaging, and shared data come next. We’ve prepared a server-side Gemini integration, but it is not enabled in this deployment. We won’t claim AI-generated advice until a real request succeeds.”
 
-**0:45–1:10 — The experience**
+## Optional Gemini segment — only after live validation
 
-“Then you discover potential roommates through a familiar card interface. You can swipe left to pass or right to like. But there’s more here than a photo. Each card includes a compatibility score based on five everyday preferences.”
-
-[Open the compatibility badge.]
-
-“You can see exactly what contributes to that score and what to discuss before moving in. The explanation is transparent and rule based.”
-
-**1:10–1:30 — The match**
-
-[Like Maya, then open the matches page.]
-
-“When interest is mutual, Roomie celebrates the connection and saves the match. For this MVP, we use fictional student profiles and simulated incoming likes. Your preferences and matches persist in this browser, making the demo fully interactive without needing an account.”
-
-**1:30–1:50 — How we built it**
-
-“We’re a team of three beginner developers. We built Roomie with React and Vite, a responsive interface, touch gestures, and a separate compatibility module with automated tests. We focused on a clear, working experience that students could understand immediately.”
-
-**1:50–2:00 — What’s next**
-
-“Next, we’d add verified student accounts, a shared database, real mutual matching, and messaging. Roomie’s goal is simple: help students find their people, then find their place.”
+Replace the final paragraph only after the deployed endpoint returns a genuine response and the UI labels it Gemini. Show the response live. Explain that Gemini suggests discussion points using anonymous scenario choices; the numerical rank remains a separate transparent model. Do not claim Gemini-track eligibility based on an unconfigured endpoint.
