@@ -1,5 +1,18 @@
 # Roomie — scenario-based roommate discovery
 
+## Match chat + Gemini (new)
+
+- **Match popup:** a Gemini match breakdown (3 strengths, 1 friction point with a suggestion, an icebreaker) plus a **Message [name]** button.
+- **Messages** (header button with a match count, or the Your matches tab): matches list with fit %, last message and unread badge. Opens a chat with a typing indicator, a one-tap **Send Icebreaker** chip, and a **Roommate Agreement** button (Gemini, rendered with react-markdown).
+- **Sample profiles:** Gemini replies *in character*, clearly labeled "Sample profile · replies are AI-simulated". **Real accounts** (same browser) get real person-to-person messages, never AI.
+- Chats, matches and match breakdowns are saved in localStorage per account, keyed by profile id.
+
+Server routes (Vercel functions, key stays on the server): `api/explain.js`, `api/agreement.js`, `api/chat.js`, sharing `api/_lib/gemini.js` (`@google/genai`, model `GEMINI_MODEL` or `gemini-2.5-flash`, **8 s timeout**, input limits, the same origin allowlist as `api/gemini.js`). Every route returns a hard-coded fallback on a missing key, timeout, error or bad JSON, and the browser falls back too if there's no server at all (e.g. GitHub Pages). Fallback text is always labeled "Offline sample · Gemini not connected".
+
+**To turn Gemini on:** deploy the source to Vercel (`npx vercel`), add `GEMINI_API_KEY` (and optionally `GEMINI_MODEL`) under Settings → Environment Variables, then `npx vercel --prod`. Open the Vercel URL. To keep using GitHub Pages for the frontend, build with `VITE_API_BASE=https://<your-vercel-app>.vercel.app` and add the Pages origin to `ROOMIE_ALLOWED_ORIGINS` if it isn't `https://alpazder.github.io`.
+
+Tested: `api/ai.test.js` (6 tests against a mock Gemini server: JSON mode, server key, in-character prompt, fallbacks for bad JSON, errors, timeout and a missing key, input limits, origin blocking) and `tests/ui/chat_smoke.py` (match → breakdown → chat → icebreaker → AI reply → agreement → reload, with and without the API). **Not yet verified against the live Gemini API.** Check a real reply shows "Written by Gemini" before pitching it.
+
 ## Basic login (no Supabase)
 
 Without Supabase settings, the app opens on a simple **Log in / Sign up** screen. Accounts, profiles, scenario answers, swipes and matches are saved per account in this browser's localStorage. There's no encryption or real security, so don't use real passwords. Code: `src/BasicAuth.jsx`.
