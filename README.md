@@ -1,5 +1,36 @@
 # Roomie — scenario-based roommate discovery
 
+## Basic login (no Supabase)
+
+Without Supabase settings, the app opens on a simple **Log in / Sign up** screen. Accounts, profiles, scenario answers, swipes and matches are saved per account in this browser's localStorage. There's no encryption or real security, so don't use real passwords. Code: `src/BasicAuth.jsx`.
+
+## Real-user mode (Supabase), new
+
+When `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are set, Roomie runs as a multi-user app. Without them it runs in the labeled demo mode below. **Setup, testing and deployment steps: see [SETUP.md](SETUP.md).**
+
+- **Accounts:** Supabase Auth email/password sign-up, login, logout, password reset and persistent sessions. Emails stay in `auth.users` and are never shown to other users.
+- **Required onboarding:** Account → Profile → Your vibe (all 10 scenarios) → Discover. Progress is saved to the account (`profiles.onboarding_step` plus one row per answer), so it resumes after a refresh or on another device. The database refuses to advance a step until it's complete.
+- **Profiles:** display name, university, major, budget, preferred city and move-in date are required. Bio, interests and photo are optional. Users can choose whether they appear in discovery. Photos go in a private bucket (JPEG/PNG/WebP, 3 MB), are re-encoded in the browser to strip location metadata, and can be viewed only by signed-in users allowed to see that profile.
+- **Compatibility between two real users** (`fitUsers` in `src/scenarios.js`) uses both people's scenario answers and both budgets. An area counts only if both people answered it; dealbreakers count 3×; missing areas are listed and never guessed. It measures preference similarity, not a prediction.
+- **Matching:** `record_swipe()` stores likes and passes, and creates a match only when both people liked each other. A per-pair lock plus a unique constraint mean simultaneous likes produce exactly one match. Incoming likes are invisible until mutual. There are no simulated likes in real mode.
+- **Messaging:** only between matched users. `send_message()` checks membership, the match being open and blocks, and a trigger re-checks on every insert. Message ids come from the client, so retrying a failed send never duplicates it. Realtime delivery, 30-message pages, timestamps, unread counts (`conversation_reads`), plain-text rendering, and unmatch/block, which closes the chat and removes the pair from each other's discovery.
+- **Security:** Row Level Security on every table. Swipes, matches, messages and blocks have no direct write policies (writes go only through checked database functions). Helper functions aren't executable by clients. Only the publishable key is used in the frontend.
+
+Code: `src/real/` (UI and data layer), `supabase/migrations/` (schema, RLS, functions, storage), `tests/db/` (database rule tests on PostgreSQL), `tests/ui/` (UI smoke test with an in-memory fake backend).
+
+### Tested so far
+- `npm run test:db`: 11 tests run the real migrations on PostgreSQL 16 (with a small Supabase stand-in for `auth`/`storage`) and act as several users: onboarding gates, profile/answer ownership, discovery eligibility, private one-sided likes, exactly one match (including 15 rounds of truly concurrent likes; the test fails if the pair lock is removed), messaging membership, idempotent retries, unread state, a third account locked out, unmatch/block, and photo access.
+- `npm test`: scoring tests, including two-user compatibility and missing-answer handling.
+- `tests/ui/smoke.py`: 20-step browser run of every screen against a fake backend (sign-in, validation, resume after refresh, undo, ranking, match, send/retry, realtime receive, unread, revisiting answers, discovery toggle, block, logout, demo mode), on desktop and mobile.
+- **Not yet tested against a live Supabase project, Realtime or Storage.** Run the SETUP.md checklist before relying on it.
+
+### Known limitations
+- Scenario answers of people in discovery are visible to other signed-in users, since both sets are needed to compute compatibility.
+- No student verification, content moderation, reporting, rate limiting beyond Supabase defaults, or push notifications.
+- Supabase's built-in email sender is rate-limited; add custom SMTP before a public launch.
+- The bundle is large (~1.7 MB) because the demo photos are inlined.
+
+
 Live demo: https://alpazder.github.io/roomie-hackjam/
 
 React, Vite, Tailwind CSS, and localStorage. The deployed GitHub Pages index is a self-contained static build; the source archive contains the editable application and optional API handler.
